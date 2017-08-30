@@ -1903,7 +1903,9 @@ struct JsonMeta
     unsigned int size;
     unsigned int skip;
     unsigned int children;
+	unsigned int complex_children;
     bool is_array : 1;
+	bool has_data : 1;
 };
 
 static inline std::vector<JsonMeta> metaForTokens(const JsonTokens &tokens)
@@ -1937,10 +1939,45 @@ static inline std::vector<JsonMeta> metaForTokens(const JsonTokens &tokens)
             }
             meta.push_back({ i, 1, 1, 0, token.value_type == Type::ArrayStart });
             parent.push_back(meta.size()-1);
-        }
+		}
+		else if (token.value_type != JT::Type::ArrayEnd && token.value_type != JT::Type::ObjectEnd)
+		{
+			for (size_t parent_index : parent) {
+				meta[parent_index].has_data = true;
+			}
+		}
     }
     assert(!parent.size());
     return meta;
+}
+
+namespace Internal
+{
+	int findFirstChildWithData(const std::vector<JsonMeta> &meta_vec, size_t start_index)
+	{
+		const JsonMeta &meta = meta_vec[start_index];
+		if (!meta.has_data)
+			return -1;
+		if (meta.children)
+		size_t skip_size = 0;
+		bool has_found_child_with_data = false;
+		for (int i = 0; i < meta.complex_children; i++)
+		{
+			int child = findFirstChildWithData(meta_vec, start_index + 1);
+		}
+
+
+	}
+}
+
+std::string firstArrayOrObjectWithData(const JsonTokens &tokens)
+{
+	auto meta = metaForTokens(tokens);
+	size_t token_index = 0;
+	while (token_index < tokens.data.size())
+	{
+		auto &token = meta[token_index];
+	}
 }
 
 template <typename T>
